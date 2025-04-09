@@ -99,7 +99,10 @@ const EditRecipe = () => {
   const fetchRecipe = async () => {
     try {
       console.log("Fetching recipe with ID:", id);
-      const { data: recipe, error: recipeError } = await supabase
+      console.log("Current session:", session);
+
+      // Fetch recipe details with user_id
+      const { data: recipeData, error: recipeError } = await supabase
         .from("recipes")
         .select("*")
         .eq("id", id)
@@ -107,61 +110,79 @@ const EditRecipe = () => {
 
       if (recipeError) {
         console.error("Error fetching recipe:", recipeError);
-        setError("Failed to load recipe");
-        return;
+        throw recipeError;
       }
 
-      if (!recipe) {
-        console.error("No recipe found with ID:", id);
-        setError("Recipe not found");
-        return;
-      }
-
-      console.log("Recipe data:", recipe);
+      console.log("Recipe data loaded:", recipeData);
 
       // Check if the recipe belongs to the current user
-      if (recipe.user_id !== session?.user?.id) {
-        console.error("Recipe does not belong to current user");
+      if (recipeData.user_id !== session?.user?.id) {
+        console.log("Recipe user_id:", recipeData.user_id);
+        console.log("Current user id:", session?.user?.id);
         setError("You don't have permission to edit this recipe");
+        navigate("/recipes");
         return;
       }
 
       // Fetch ingredients
-      const { data: ingredients, error: ingredientsError } = await supabase
+      console.log("Fetching ingredients for recipe ID:", id);
+      const { data: ingredientsData, error: ingredientsError } = await supabase
         .from("ingredients")
         .select("*")
-        .eq("recipe_id", id)
-        .order("id");
+        .eq("recipe_id", id);
 
       if (ingredientsError) {
         console.error("Error fetching ingredients:", ingredientsError);
-        setError("Failed to load ingredients");
-        return;
+        throw ingredientsError;
       }
 
-      console.log("Ingredients data:", ingredients);
+      console.log("Ingredients data loaded:", ingredientsData);
 
-      // Update form data
-      setFormData({
-        name: recipe.name || "",
-        description: recipe.description || "",
-        servings: recipe.servings ? recipe.servings.toString() : "",
-        instructions: recipe.instructions || "",
-        img_url: recipe.img_url || "",
-        category_id: recipe.category_id || "",
-      });
+      // Clear any existing localStorage data for this recipe
+      localStorage.removeItem(`recipe_form_${id}`);
+      localStorage.removeItem(`recipe_ingredients_${id}`);
 
-      // Update ingredients
-      if (ingredients && ingredients.length > 0) {
-        setIngredients(ingredients);
+      // Set form data from database
+      if (recipeData) {
+        console.log("Setting form data from database");
+        const formDataToSet = {
+          name: recipeData.name || "",
+          description: recipeData.description || "",
+          servings: recipeData.servings ? recipeData.servings.toString() : "",
+          instructions: recipeData.instructions || "",
+          img_url: recipeData.img_url || "",
+          category_id: recipeData.category_id || "",
+        };
+        console.log("Form data to set:", formDataToSet);
+        setFormData(formDataToSet);
+      }
+
+      // Set ingredients from database
+      if (ingredientsData && ingredientsData.length > 0) {
+        console.log("Setting ingredients from database");
+        // Convert ingredients to the format used in the form
+        const formattedIngredients = ingredientsData.map((ingredient) => ({
+          id: ingredient.id,
+          name: ingredient.name || "",
+          quantity_unit: `${ingredient.quantity || ""} ${
+            ingredient.unit || ""
+          }`.trim(),
+          additional_info: ingredient.additional_info || "",
+        }));
+        console.log("Formatted ingredients:", formattedIngredients);
+        setIngredients(formattedIngredients);
       } else {
+        // If no ingredients found, set a default empty ingredient
+        console.log("No ingredients found, setting default empty ingredient");
         setIngredients([{ name: "", quantity_unit: "", additional_info: "" }]);
       }
 
+      // Mark data as loaded
       setIsDataLoaded(true);
+      console.log("Data loading completed");
     } catch (error) {
-      console.error("Error in fetchRecipe:", error);
-      setError("An unexpected error occurred");
+      console.error("Error fetching recipe:", error);
+      setError("Failed to load recipe. Please try again later.");
     }
   };
 
