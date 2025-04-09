@@ -10,6 +10,8 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Profile from "./pages/Profile";
 import ResetPassword from "./pages/ResetPassword";
+import AddRecipe from "./pages/AddRecipe";
+import EditRecipe from "./pages/EditRecipe";
 import { AuthProvider } from "./contexts/AuthContext";
 
 function App() {
@@ -24,11 +26,13 @@ function App() {
               <Route path="/recipes" element={<Recipes />} />
               <Route path="/recipes/:categoryId" element={<Recipes />} />
               <Route path="/recipe/:id" element={<RecipeDetail />} />
+              <Route path="/recipe/:id/edit" element={<EditRecipe />} />
               <Route path="/about" element={<About />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/add-recipe" element={<AddRecipe />} />
             </Routes>
           </main>
           <ScrollToTop />
