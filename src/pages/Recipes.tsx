@@ -38,6 +38,8 @@ const Recipes = () => {
   const fetchRecipes = async () => {
     try {
       setLoading(true);
+      console.log("Fetching recipes with category:", selectedCategory);
+
       let query = supabase.from("recipes").select("*");
 
       if (selectedCategory) {
@@ -46,10 +48,15 @@ const Recipes = () => {
 
       const { data, error } = await query;
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching recipes:", error);
+        throw error;
+      }
+
+      console.log("Recipes fetched successfully:", data);
       if (data) setRecipes(data);
     } catch (error) {
-      console.error("Error fetching recipes:", error);
+      console.error("Error in fetchRecipes:", error);
       setError("Failed to load recipes");
     } finally {
       setLoading(false);

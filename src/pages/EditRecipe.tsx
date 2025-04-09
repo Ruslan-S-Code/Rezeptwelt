@@ -99,6 +99,7 @@ const EditRecipe = () => {
   const fetchRecipe = async () => {
     try {
       console.log("Fetching recipe with ID:", id);
+      console.log("Current session:", session);
 
       // Fetch recipe details with user_id
       const { data: recipeData, error: recipeError } = await supabase
@@ -116,12 +117,15 @@ const EditRecipe = () => {
 
       // Check if the recipe belongs to the current user
       if (recipeData.user_id !== session?.user?.id) {
+        console.log("Recipe user_id:", recipeData.user_id);
+        console.log("Current user id:", session?.user?.id);
         setError("You don't have permission to edit this recipe");
         navigate("/recipes");
         return;
       }
 
       // Fetch ingredients
+      console.log("Fetching ingredients for recipe ID:", id);
       const { data: ingredientsData, error: ingredientsError } = await supabase
         .from("ingredients")
         .select("*")
@@ -314,7 +318,7 @@ const EditRecipe = () => {
           name: ingredient.name.trim(),
           quantity: parseFloat(quantity) || 0,
           unit: unit || "",
-          additional_info: ingredient.additional_info.trim() || " ",
+          additional_info: ingredient.additional_info.trim() || null,
         };
       });
 

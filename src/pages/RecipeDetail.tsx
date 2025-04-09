@@ -25,6 +25,7 @@ const RecipeDetail = () => {
   const fetchRecipeDetails = async () => {
     try {
       setLoading(true);
+      console.log("Fetching recipe details for ID:", id);
 
       // Fetch recipe details
       const { data: recipeData, error: recipeError } = await supabase
@@ -33,19 +34,30 @@ const RecipeDetail = () => {
         .eq("id", id)
         .single();
 
-      if (recipeError) throw recipeError;
+      if (recipeError) {
+        console.error("Error fetching recipe details:", recipeError);
+        throw recipeError;
+      }
+
+      console.log("Recipe details fetched successfully:", recipeData);
       if (recipeData) setRecipe(recipeData);
 
       // Fetch ingredients
+      console.log("Fetching ingredients for recipe ID:", id);
       const { data: ingredientsData, error: ingredientsError } = await supabase
         .from("ingredients")
         .select("*")
         .eq("recipe_id", id);
 
-      if (ingredientsError) throw ingredientsError;
+      if (ingredientsError) {
+        console.error("Error fetching ingredients:", ingredientsError);
+        throw ingredientsError;
+      }
+
+      console.log("Ingredients fetched successfully:", ingredientsData);
       if (ingredientsData) setIngredients(ingredientsData);
     } catch (error) {
-      console.error("Error fetching recipe details:", error);
+      console.error("Error in fetchRecipeDetails:", error);
       setError("Failed to load recipe");
     } finally {
       setLoading(false);

@@ -144,6 +144,16 @@ const AddRecipe = () => {
         throw new Error("User not authenticated");
       }
 
+      console.log("Creating recipe with data:", {
+        name: formData.name.trim(),
+        description: formData.description.trim(),
+        servings: parseInt(formData.servings),
+        instructions: formData.instructions.trim(),
+        img_url: formData.img_url.trim() || null,
+        category_id: formData.category_id,
+        user_id: session.user.id,
+      });
+
       // Сначала создаем рецепт
       const { data: recipeData, error: recipeError } = await supabase
         .from("recipes")
@@ -170,6 +180,8 @@ const AddRecipe = () => {
         throw new Error("No recipe data returned");
       }
 
+      console.log("Recipe created successfully:", recipeData);
+
       // Добавляем ингредиенты
       const ingredientsToInsert = ingredients.map((ingredient) => {
         const [quantity, unit] = ingredient.quantity_unit.trim().split(/\s+/);
@@ -182,15 +194,20 @@ const AddRecipe = () => {
         };
       });
 
+      console.log("Ingredients to insert:", ingredientsToInsert);
+
       const { error: ingredientsError } = await supabase
         .from("ingredients")
         .insert(ingredientsToInsert);
 
       if (ingredientsError) {
+        console.error("Error inserting ingredients:", ingredientsError);
         throw new Error(
           `Failed to add ingredients: ${ingredientsError.message}`
         );
       }
+
+      console.log("Ingredients added successfully");
 
       setSuccess("Recipe added successfully!");
       setFormData({
