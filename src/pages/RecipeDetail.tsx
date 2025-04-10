@@ -39,8 +39,9 @@ const RecipeDetail = () => {
         throw recipeError;
       }
 
-      console.log("Recipe details fetched successfully:", recipeData);
-      if (recipeData) setRecipe(recipeData);
+      if (recipeData) {
+        setRecipe(recipeData);
+      }
 
       // Fetch ingredients
       console.log("Fetching ingredients for recipe ID:", id);
@@ -54,8 +55,9 @@ const RecipeDetail = () => {
         throw ingredientsError;
       }
 
-      console.log("Ingredients fetched successfully:", ingredientsData);
-      if (ingredientsData) setIngredients(ingredientsData);
+      if (ingredientsData) {
+        setIngredients(ingredientsData);
+      }
     } catch (error) {
       console.error("Error in fetchRecipeDetails:", error);
       setError("Failed to load recipe");
@@ -103,7 +105,7 @@ const RecipeDetail = () => {
   const isOwner = session?.user?.id === recipe.user_id;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-100">
       <div className="fixed top-20 left-4 z-10 flex space-x-2">
         <button
           onClick={() => navigate(-1)}

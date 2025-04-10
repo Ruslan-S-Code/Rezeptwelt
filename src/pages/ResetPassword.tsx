@@ -15,10 +15,19 @@ const ResetPassword = () => {
   const { session } = useAuth();
 
   useEffect(() => {
+    const hash = location.hash;
+    const params = new URLSearchParams(hash.replace("#", ""));
+    const accessToken = params.get("access_token");
+    const type = params.get("type");
+  
+    console.log("access_token:", accessToken);
+    console.log("type:", type);
+  
     if (session) {
       navigate("/");
     }
-  }, [session, navigate]);
+  }, [location, session, navigate]);
+  
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();

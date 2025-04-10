@@ -15,6 +15,8 @@ export interface Recipe {
     created_at: string;
     img_url: string | null;
     user_id: string;
+    is_default: boolean;
+    author_name: string;
 }
 
 export interface Ingredient {

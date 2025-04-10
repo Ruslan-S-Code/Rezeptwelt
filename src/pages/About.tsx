@@ -4,16 +4,24 @@ const UberUns = () => {
   return (
     <div>
       {/* Hero секция с фоновым изображением */}
-      <div
-        className="relative h-[400px] bg-cover bg-center flex items-center justify-center"
-        style={{
-          backgroundImage: `url(${backgroundImage})`,
-        }}
-      >
-        <h1 className="text-4xl md:text-5xl text-white text-center font-bold max-w-3xl px-4">
-          Lassen Sie sich inspirieren, kochen Sie mit Leidenschaft und erleben
-          Sie unvergessliche Momente bei Tisch.
-        </h1>
+      <div className="relative h-[500px]">
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{
+            backgroundImage: `url(${backgroundImage})`,
+          }}
+        />
+        <div className="absolute inset-0 bg-black/50" />
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="container mx-auto px-4">
+            <div className="text-center text-white">
+              <h1 className="text-3xl md:text-5xl font-bold mb-4">
+                Lassen Sie sich inspirieren, kochen Sie mit Leidenschaft und
+                erleben Sie unvergessliche Momente bei Tisch.
+              </h1>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Контентная секция */}

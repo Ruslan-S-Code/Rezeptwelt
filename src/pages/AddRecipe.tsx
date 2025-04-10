@@ -144,6 +144,18 @@ const AddRecipe = () => {
         throw new Error("User not authenticated");
       }
 
+      // Получаем nickname из profiles
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('nickname')
+        .eq('id', session.user.id)
+        .single();
+
+      const authorName = profileData?.nickname || 'Anonymous';
+
+      console.log("Profile data:", profileData);
+      console.log("Selected username:", authorName);
+
       console.log("Creating recipe with data:", {
         name: formData.name.trim(),
         description: formData.description.trim(),
@@ -152,9 +164,11 @@ const AddRecipe = () => {
         img_url: formData.img_url.trim() || null,
         category_id: formData.category_id,
         user_id: session.user.id,
+        author_name: authorName,
+        is_default: false,
       });
 
-      // Сначала создаем рецепт
+      // Создаем рецепт с именем автора
       const { data: recipeData, error: recipeError } = await supabase
         .from("recipes")
         .insert([
@@ -166,6 +180,8 @@ const AddRecipe = () => {
             img_url: formData.img_url.trim() || null,
             category_id: formData.category_id,
             user_id: session.user.id,
+            author_name: authorName,
+            is_default: false,
           },
         ])
         .select()

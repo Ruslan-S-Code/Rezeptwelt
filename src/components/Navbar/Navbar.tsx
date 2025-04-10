@@ -1,13 +1,25 @@
-import { Link } from "react-router-dom";
-import { supabase } from "../../lib/supabaseClient";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
+import { useState } from "react";
 import Icon from "../../assets/Icon.png";
+import { supabase } from "../../lib/supabaseClient";
 
 const Navbar = () => {
-  const { session } = useAuth();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
+  const handleSignOut = async () => {
+    try {
+      await supabase.auth.signOut();
+      navigate("/");
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+  };
+
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
   };
 
   return (
@@ -23,7 +35,49 @@ const Navbar = () => {
             </Link>
           </div>
 
-          <div className="flex items-center space-x-4">
+          {/* Mobile menu button */}
+          <div className="flex items-center sm:hidden">
+            <button
+              onClick={toggleMenu}
+              className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500"
+            >
+              <span className="sr-only">Open main menu</span>
+              {!isMenuOpen ? (
+                <svg
+                  className="block h-6 w-6"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 6h16M4 12h16M4 18h16"
+                  />
+                </svg>
+              ) : (
+                <svg
+                  className="block h-6 w-6"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              )}
+            </button>
+          </div>
+
+          {/* Desktop menu */}
+          <div className="hidden sm:flex sm:items-center sm:space-x-4">
             <Link
               to="/"
               className="text-gray-600 hover:text-yellow-600 px-3 py-2 rounded-md text-sm font-medium"
@@ -42,15 +96,15 @@ const Navbar = () => {
             >
               Über Uns
             </Link>
-            {session ? (
+            {user ? (
               <div className="flex items-center space-x-2">
                 <Link
                   to="/profile"
                   className="text-gray-600 hover:text-yellow-600 px-3 py-2 rounded-md text-sm font-medium flex items-center"
                 >
-                  {session.user.user_metadata.avatar_url ? (
+                  {user.user_metadata.avatar_url ? (
                     <img
-                      src={session.user.user_metadata.avatar_url}
+                      src={user.user_metadata.avatar_url}
                       alt="Avatar"
                       className="w-8 h-8 rounded-full object-cover mr-2"
                     />
@@ -69,10 +123,10 @@ const Navbar = () => {
                       />
                     </svg>
                   )}
-                  {session.user.user_metadata.username || "Profile"}
+                  {user.user_metadata.username || "Profile"}
                 </Link>
                 <button
-                  onClick={handleLogout}
+                  onClick={handleSignOut}
                   className="bg-yellow-600 text-white hover:bg-yellow-700 px-4 py-2 rounded-md text-sm font-medium"
                 >
                   Logout
@@ -87,6 +141,61 @@ const Navbar = () => {
               </Link>
             )}
           </div>
+        </div>
+      </div>
+
+      {/* Mobile menu */}
+      <div className={`${isMenuOpen ? "block" : "hidden"} sm:hidden`}>
+        <div className="px-2 pt-2 pb-3 space-y-1">
+          <Link
+            to="/"
+            className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
+            onClick={() => setIsMenuOpen(false)}
+          >
+            Home
+          </Link>
+          <Link
+            to="/recipes"
+            className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
+            onClick={() => setIsMenuOpen(false)}
+          >
+            Rezepte
+          </Link>
+          <Link
+            to="/about"
+            className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
+            onClick={() => setIsMenuOpen(false)}
+          >
+            Über Uns
+          </Link>
+          {user ? (
+            <>
+              <Link
+                to="/profile"
+                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Profil
+              </Link>
+              <button
+                onClick={() => {
+                  handleSignOut();
+                  setIsMenuOpen(false);
+                }}
+                className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
+              >
+                Abmelden
+              </button>
+            </>
+          ) : (
+            <Link
+              to="/login"
+              className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Anmelden
+            </Link>
+          )}
         </div>
       </div>
     </nav>

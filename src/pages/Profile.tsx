@@ -31,6 +31,7 @@ export default function Profile() {
       setAddress(session.user.user_metadata.address || "");
       setEmail(session.user.email || "");
       fetchUserRecipes();
+      initializeProfile();
     }
   }, [session]);
 
@@ -49,6 +50,40 @@ export default function Profile() {
       setError("Failed to load recipes");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const initializeProfile = async () => {
+    try {
+      const { data: existingProfile, error: checkError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', session?.user.id)
+        .single();
+
+      if (checkError && checkError.code !== 'PGRST116') {
+        console.error('Profile check error:', checkError);
+        return;
+      }
+
+      if (!existingProfile) {
+        const { error: createError } = await supabase
+          .from('profiles')
+          .insert({
+            id: session?.user.id,
+            email: session?.user.email || "",
+            name: username,
+            full_name: `${firstName} ${lastName}`,
+            nickname: username,
+            created_at: new Date().toISOString()
+          });
+
+        if (createError) {
+          console.error('Profile creation error:', createError);
+        }
+      }
+    } catch (error) {
+      console.error('Error initializing profile:', error);
     }
   };
 
@@ -107,7 +142,7 @@ export default function Profile() {
     setSuccess(null);
 
     try {
-      // Update profile information
+      // Update profile information in auth metadata
       const { error: updateError } = await supabase.auth.updateUser({
         data: {
           username,
@@ -117,7 +152,27 @@ export default function Profile() {
         },
       });
 
-      if (updateError) throw updateError;
+      if (updateError) {
+        console.error('Auth update error:', updateError);
+        throw new Error(`Failed to update auth data: ${updateError.message}`);
+      }
+
+      // Update profile information in profiles table
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .upsert({
+          id: session?.user.id,
+          email: email,
+          name: username,
+          full_name: `${firstName} ${lastName}`,
+          nickname: username,
+          updated_at: new Date().toISOString()
+        });
+
+      if (profileError) {
+        console.error('Profile update error:', profileError);
+        throw new Error(`Failed to update profile: ${profileError.message}`);
+      }
 
       // Update email if changed
       if (email !== session?.user.email) {
